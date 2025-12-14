@@ -20,6 +20,7 @@ import {
 
 export class SuperFlixAPIService {
   private readonly baseURL = 'https://superflixapi.run';
+  private readonly useProxy = typeof window !== 'undefined'; // Use proxy in browser
 
   /**
    * Get all content IDs for a specific category
@@ -33,7 +34,11 @@ export class SuperFlixAPIService {
   ): Promise<string[]> {
     return withRetryAndCache(
       async () => {
-        const url = `${this.baseURL}/lista/${category}/${type}`;
+        const endpoint = `/lista/${category}/${type}`;
+        const url = this.useProxy 
+          ? `/api/superflix?endpoint=${encodeURIComponent(endpoint)}`
+          : `${this.baseURL}${endpoint}`;
+        
         const response = await fetch(url, {
           next: { revalidate: 3600 }, // Cache for 1 hour
         });
@@ -81,7 +86,11 @@ export class SuperFlixAPIService {
   async getMovieDetails(imdbId: string): Promise<ContentDetail> {
     return withRetryAndCache(
       async () => {
-        const url = `${this.baseURL}/filme/${imdbId}`;
+        const endpoint = `/filme/${imdbId}`;
+        const url = this.useProxy
+          ? `/api/superflix?endpoint=${encodeURIComponent(endpoint)}`
+          : `${this.baseURL}${endpoint}`;
+        
         const response = await fetch(url, {
           next: { revalidate: 1800 }, // Cache for 30 minutes
         });
@@ -123,7 +132,11 @@ export class SuperFlixAPIService {
   async getSeriesDetails(tmdbId: string): Promise<ContentDetail> {
     return withRetryAndCache(
       async () => {
-        const url = `${this.baseURL}/serie/${tmdbId}`;
+        const endpoint = `/serie/${tmdbId}`;
+        const url = this.useProxy
+          ? `/api/superflix?endpoint=${encodeURIComponent(endpoint)}`
+          : `${this.baseURL}${endpoint}`;
+        
         const response = await fetch(url, {
           next: { revalidate: 1800 }, // Cache for 30 minutes
         });
