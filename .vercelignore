@@ -1,0 +1,51 @@
+# Vercel Ignore File
+# Files and directories to exclude from Vercel deployment
+
+# Tests
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+*.test.js
+*.spec.js
+__tests__/
+coverage/
+.vitest/
+
+# Documentation
+*.md
+!README.md
+docs/
+.github/
+
+# Development files
+.vscode/
+.idea/
+*.log
+.DS_Store
+
+# Example files
+**/*.example.tsx
+**/*.example.ts
+
+# Local environment
+.env.local
+.env*.local
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/workflows/
+
+# Build artifacts (will be rebuilt)
+.next/
+out/
+build/
+
+# Dependencies (will be reinstalled)
+node_modules/
+
+# TypeScript build info
+*.tsbuildinfo
