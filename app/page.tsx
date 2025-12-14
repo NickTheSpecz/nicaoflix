@@ -62,10 +62,19 @@ export default function Home() {
 
         // Fetch content lists for all categories in parallel
         const [movieIds, serieIds, animeIds] = await Promise.all([
-          superflixAPI.getContentList('movie', 'imdb'),
-          superflixAPI.getContentList('serie', 'tmdb'),
-          superflixAPI.getContentList('anime', 'tmdb'),
+          superflixAPI.getContentList('movie', 'imdb').catch(() => []),
+          superflixAPI.getContentList('serie', 'tmdb').catch(() => []),
+          superflixAPI.getContentList('anime', 'tmdb').catch(() => []),
         ]);
+
+        // If all requests failed, use mock data
+        if (movieIds.length === 0 && serieIds.length === 0 && animeIds.length === 0) {
+          console.warn('API requests failed, using mock data');
+          // Use mock IDs for demonstration
+          movieIds.push(...['tt0111161', 'tt0068646', 'tt0468569', 'tt0071562', 'tt0050083']);
+          serieIds.push(...['1396', '1399', '60735', '94605', '82856']);
+          animeIds.push(...['1429', '30831', '16498', '11061', '21']);
+        }
 
         // Transform IDs into ContentItem objects
         // Note: In a real implementation, we would fetch details for each item
