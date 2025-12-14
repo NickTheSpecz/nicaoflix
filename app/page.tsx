@@ -74,49 +74,52 @@ export default function Home() {
           animeIds = ['1429', '30831', '16498', '11061', '21'];
         }
 
-        // Transform IDs into ContentItem objects
-        // Note: In a real implementation, we would fetch details for each item
-        // For now, we'll create placeholder items with the IDs
-        const movies: ContentItem[] = movieIds.slice(0, 20).map((id) => ({
-          id,
-          imdbId: id,
-          type: 'movie',
-          title: `Movie ${id}`,
-          posterPath: `https://via.placeholder.com/300x450?text=Movie+${id}`,
-          backdropPath: `https://via.placeholder.com/1920x1080?text=Movie+${id}`,
-          overview: 'Loading details...',
-        }));
+        // Fetch actual details for a subset of content
+        // We'll fetch details for the first few items to show real data
+        const fetchMovieDetails = async (imdbId: string): Promise<ContentItem> => {
+          try {
+            const details = await superflixAPI.getMovieDetails(imdbId);
+            return details;
+          } catch {
+            return {
+              id: imdbId,
+              imdbId,
+              type: 'movie',
+              title: `Movie ${imdbId}`,
+              posterPath: `https://image.tmdb.org/t/p/w500/placeholder.jpg`,
+              overview: 'Details unavailable',
+            };
+          }
+        };
 
-        const series: ContentItem[] = serieIds.slice(0, 20).map((id) => ({
-          id,
-          tmdbId: id,
-          type: 'serie',
-          title: `Serie ${id}`,
-          posterPath: `https://via.placeholder.com/300x450?text=Serie+${id}`,
-          backdropPath: `https://via.placeholder.com/1920x1080?text=Serie+${id}`,
-          overview: 'Loading details...',
-        }));
+        const fetchSeriesDetails = async (tmdbId: string, type: 'serie' | 'anime' | 'dorama'): Promise<ContentItem> => {
+          try {
+            const details = await superflixAPI.getSeriesDetails(tmdbId);
+            return { ...details, type };
+          } catch {
+            return {
+              id: tmdbId,
+              tmdbId,
+              type,
+              title: `${type} ${tmdbId}`,
+              posterPath: `https://image.tmdb.org/t/p/w500/placeholder.jpg`,
+              overview: 'Details unavailable',
+            };
+          }
+        };
 
-        const animes: ContentItem[] = animeIds.slice(0, 20).map((id) => ({
-          id,
-          tmdbId: id,
-          type: 'anime',
-          title: `Anime ${id}`,
-          posterPath: `https://via.placeholder.com/300x450?text=Anime+${id}`,
-          backdropPath: `https://via.placeholder.com/1920x1080?text=Anime+${id}`,
-          overview: 'Loading details...',
-        }));
+        // Fetch details for first 10 items of each category
+        const movieDetailsPromises = movieIds.slice(0, 10).map(fetchMovieDetails);
+        const seriesDetailsPromises = serieIds.slice(0, 10).map(id => fetchSeriesDetails(id, 'serie'));
+        const animeDetailsPromises = animeIds.slice(0, 10).map(id => fetchSeriesDetails(id, 'anime'));
+        const doramaDetailsPromises = serieIds.slice(10, 15).map(id => fetchSeriesDetails(id, 'dorama'));
 
-        // Doramas are typically series, so we'll use a subset of series
-        const doramas: ContentItem[] = serieIds.slice(20, 35).map((id) => ({
-          id,
-          tmdbId: id,
-          type: 'dorama',
-          title: `Dorama ${id}`,
-          posterPath: `https://via.placeholder.com/300x450?text=Dorama+${id}`,
-          backdropPath: `https://via.placeholder.com/1920x1080?text=Dorama+${id}`,
-          overview: 'Loading details...',
-        }));
+        const [movies, series, animes, doramas] = await Promise.all([
+          Promise.all(movieDetailsPromises),
+          Promise.all(seriesDetailsPromises),
+          Promise.all(animeDetailsPromises),
+          Promise.all(doramaDetailsPromises),
+        ]);
 
         const content = [...movies, ...series, ...animes, ...doramas];
         setAllContent(content);
